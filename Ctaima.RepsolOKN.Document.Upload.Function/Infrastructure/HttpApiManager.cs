@@ -68,6 +68,7 @@ namespace Ctaima.RepsolOKN.Document.Upload.Function.Infrastructure
                         client.DefaultRequestHeaders.Add("tenantId", TenantId);
 
                     var result = await client.GetAsync(path);
+                    result.EnsureSuccessStatusCode();
                     var response = await result.Content.ReadAsStringAsync();
 
                     log.Info($"Result post: {response}");

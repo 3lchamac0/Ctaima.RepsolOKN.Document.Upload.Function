@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Ctaima.RepsolOKN.Document.Upload.Function.Model
 {
-    public class FileUploadResult
+    public class Document
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 }

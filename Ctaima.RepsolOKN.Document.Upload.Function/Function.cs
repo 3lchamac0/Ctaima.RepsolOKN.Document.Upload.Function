@@ -52,10 +52,11 @@ namespace Ctaima.RepsolOKN.Document.Upload.Function
                 var company = companyArray[0];
 
                 // buscando empleado
-                var employeesJson = await clientOlympus.GetAsync($"/api/employees?identitycardnumber={data.Dni}&companyid={company.Companyid}", log);
-                if (string.IsNullOrEmpty(employeesJson))
+                var employeesJson = await clientOlympus.GetAsync($"/api/e?identitycardnumber={data.Dni}&companyid={company.Companyid}", log);
+                var employeesArray = JsonConvert.DeserializeObject<Employee[]>(employeesJson);
+                if (employeesArray.Length == 0)
                     return new BadRequestObjectResult($"No employee was found with cif: {data.Cif} and dni: {data.Dni}");
-                var employee = JsonConvert.DeserializeObject<Employee>(employeesJson);
+                var employee = employeesArray[0];
 
                 var clientAlexandria = new HttpApiManager()
                 {
@@ -72,11 +73,11 @@ namespace Ctaima.RepsolOKN.Document.Upload.Function
                 MultipartFormDataContent form = new MultipartFormDataContent();
 
                 form.Add(new StringContent("31"), "metadata[IdLoginCreator]");
-                form.Add(new StringContent(data.DocumentId), "metadata[IdDocumento]");
-                form.Add(new StringContent(data.ExpeditionDate), "metadata[FechaExpedicion]");
-                form.Add(new StringContent(data.ExpirationDate), "metadata[FechaCaducidad]");
-                form.Add(new StringContent(employee.EmployeeId), "metadata[IdRecurso]");
-                form.Add(new StringContent("Employee"), "metadata[TipoDocumento]");
+                form.Add(new StringContent(data.DocumentId), "metadata[IdRequirement]");
+                form.Add(new StringContent(data.ExpeditionDate), "metadata[ExpeditionDate]");
+                form.Add(new StringContent(data.ExpirationDate), "metadata[ExpirationDate]");
+                form.Add(new StringContent(employee.EmployeeId), "metadata[IdResource]");
+                form.Add(new StringContent("Employee"), "metadata[DocumentType]");
 
                 if (body.Value.File != null)
                 {
@@ -89,13 +90,14 @@ namespace Ctaima.RepsolOKN.Document.Upload.Function
                             fileInfo.FileName);
                 }
 
-                var resultUpload = await clientAlexandria.PostAsync("/api/documents", form, log);
-                if (string.IsNullOrEmpty(resultUpload))
+                var documentsJson = await clientAlexandria.PostAsync("/api/documents", form, log); 
+                var documentsArray = JsonConvert.DeserializeObject<Model.Document[]>(documentsJson);
+                if (documentsArray.Length == 0)
                     return new BadRequestObjectResult("Error when uploading the document to Alexandria");
-                var fileUpload = JsonConvert.DeserializeObject<FileUploadResult>(resultUpload);
+                var document = documentsArray[0];
 
 
-                var resultValidation = await clientAlexandria.PostAsync($"/api/documents/{fileUpload.Id}/validations","", log);
+                var resultValidation = await clientAlexandria.PostAsync($"/api/documents/{document.Id}/validations","", log);
                 if (string.IsNullOrEmpty(resultValidation))
                     return new BadRequestObjectResult("Error when validate the document to Alexandria");
 

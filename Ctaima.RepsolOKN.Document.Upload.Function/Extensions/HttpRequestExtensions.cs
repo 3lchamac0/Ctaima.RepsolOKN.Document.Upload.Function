@@ -44,7 +44,7 @@ namespace Ctaima.RepsolOKN.Document.Upload.Function.Extensions
     {
         public override bool IsValid(object value)
         {
-            var format = "yyyy-dd-MM";
+            var format = "dd/MM/yyyy";
             bool parsed = DateTime.TryParseExact((string)value, format,
                 System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
             if (!parsed)
